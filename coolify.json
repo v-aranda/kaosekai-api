@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "name": "kaosekai-api",
+  "description": "API de gerenciamento de fichas RPG - Node.js/Express",
+  "buildCommand": "npm run build && npm run prisma:generate",
+  "startCommand": "npm start",
+  "port": 8000,
+  "baseDirectory": "./",
+  "features": {
+    "buildCache": true,
+    "rootDirectory": true
+  }
+}
