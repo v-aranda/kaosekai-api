@@ -1,8 +1,9 @@
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import crypto from 'crypto';
 
 export const generateToken = (userId: number, tokenHash: string): string => {
-  const expiresIn = process.env.JWT_EXPIRES_IN || '30d';
+  // Garantimos que o valor seja tratado como o tipo esperado pela biblioteca
+  const expiresIn = (process.env.JWT_EXPIRES_IN || '30d') as SignOptions['expiresIn'];
   
   return jwt.sign(
     { userId, tokenHash },
