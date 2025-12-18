@@ -6,19 +6,33 @@ import apiRoutes from './routes/api';
 // Load environment variables
 dotenv.config();
 
+// Validate critical environment variables early
+const missingEnvs: string[] = [];
+if (!process.env.JWT_SECRET) missingEnvs.push('JWT_SECRET');
+if (!process.env.DATABASE_URL) missingEnvs.push('DATABASE_URL');
+
+if (missingEnvs.length) {
+  console.error(`Missing required environment variables: ${missingEnvs.join(', ')}`);
+  console.error('Please set them in your environment or .env file.');
+  process.exit(1);
+}
+
 const app = express();
 const PORT = process.env.PORT || 8000;
 
 // CORS configuration
-const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : [];
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map(o => o.trim()).filter(Boolean)
+  : [];
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Permite requisições sem origin (como mobile apps ou curl) ou se o origin estiver na lista
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Allow requests without origin (mobile apps, curl) or if origin is permitted
+    const allowAll = allowedOrigins.length === 0 || allowedOrigins.includes('*');
+    if (!origin || allowAll || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.log('CORS Bloqueado para:', origin);
+      console.log('CORS blocked for:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },

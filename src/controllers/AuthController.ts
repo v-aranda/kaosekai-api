@@ -1,11 +1,10 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
 import { generateToken, hashToken, generateRandomToken } from '../utils/token';
 import { AuthRequest } from '../middleware/auth';
-
-const prisma = new PrismaClient();
+import { prisma } from '../prisma';
 
 // Validation schemas
 const registerSchema = z.object({
@@ -54,13 +53,28 @@ export class AuthController {
       const hashedPassword = await bcrypt.hash(password, 12);
 
       // Create user
-      const user = await prisma.user.create({
-        data: {
-          name,
-          email,
-          password: hashedPassword,
-        },
-      });
+      let user;
+      try {
+        user = await prisma.user.create({
+          data: {
+            name,
+            email,
+            password: hashedPassword,
+          },
+        });
+      } catch (err) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+          // Unique constraint violation (e.g., email)
+          res.status(422).json({
+            message: 'The given data was invalid.',
+            errors: {
+              email: ['The email has already been taken.'],
+            },
+          });
+          return;
+        }
+        throw err;
+      }
 
       // Generate token
       const rawToken = generateRandomToken();
