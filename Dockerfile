@@ -33,4 +33,4 @@ RUN npx prisma generate
 EXPOSE 8000
 
 # Usamos node diretamente para performance, ou npm start se preferir
-CMD ["node", "dist/index.js"]
+CMD ["node", "dist/server.js"]
