@@ -10,17 +10,22 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 
 // CORS configuration
-const corsOrigins = process.env.CORS_ORIGIN?.split(',') || [
-  'http://localhost:5173',
-  'http://localhost:3000',
-];
+const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : [];
 
-app.use(
-  cors({
-    origin: corsOrigins,
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: (origin, callback) => {
+    // Permite requisições sem origin (como mobile apps ou curl) ou se o origin estiver na lista
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log('CORS Bloqueado para:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+}));
 
 // Middleware
 app.use(express.json());
