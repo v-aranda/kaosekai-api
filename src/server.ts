@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
 import apiRoutes from './routes/api';
 
 // Load environment variables
@@ -45,6 +46,9 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve uploaded files with permissive CORS so PDF.js/embeds can fetch from any origin
+app.use('/uploads', cors({ origin: true }));
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // API routes
 app.use('/api', apiRoutes);

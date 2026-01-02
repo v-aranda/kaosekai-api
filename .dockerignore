@@ -6,7 +6,6 @@ npm-debug.log*
 dist/
 build/
 .prisma/
-prisma/migrations/
 *.db
 *.db-journal
 dev.db
@@ -20,5 +19,4 @@ TESTING.md
 QUICKSTART.md
 DOCKER.md
 DEPLOY.md
-scripts/
 docker-compose.yml
