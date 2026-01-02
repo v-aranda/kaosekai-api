@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { AuthController } from '../controllers/AuthController';
 import { CharacterController } from '../controllers/CharacterController';
 import { authenticate } from '../middleware/auth';
+import { requireRole } from '../middleware/authorize';
+import { UserController } from '../controllers/UserController';
 
 const router = Router();
 
@@ -17,6 +19,13 @@ router.post('/login', AuthController.login);
 // Protected routes
 router.get('/user', authenticate, AuthController.getUser);
 router.post('/logout', authenticate, AuthController.logout);
+
+// Admin user management
+router.get('/users', authenticate, requireRole(['ADMIN']), UserController.index);
+router.post('/users', authenticate, requireRole(['ADMIN']), UserController.store);
+router.put('/users/:id', authenticate, requireRole(['ADMIN']), UserController.update);
+router.patch('/users/:id', authenticate, requireRole(['ADMIN']), UserController.update);
+router.delete('/users/:id', authenticate, requireRole(['ADMIN']), UserController.destroy);
 
 // Character routes (all protected)
 router.get('/characters', authenticate, CharacterController.index);

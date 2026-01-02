@@ -95,6 +95,7 @@ export class AuthController {
           id: Number(user.id),
           name: user.name,
           email: user.email,
+          role: user.role,
         },
         access_token: jwtToken,
         token_type: 'Bearer',
@@ -125,7 +126,7 @@ export class AuthController {
         where: { email },
       });
 
-      if (!user) {
+      if (!user || user.deletedAt) {
         res.status(401).json({
           message: 'The provided credentials are incorrect.',
         });
@@ -161,6 +162,7 @@ export class AuthController {
           id: Number(user.id),
           name: user.name,
           email: user.email,
+          role: user.role,
         },
         access_token: jwtToken,
         token_type: 'Bearer',

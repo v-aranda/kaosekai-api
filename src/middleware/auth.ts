@@ -9,6 +9,7 @@ export interface AuthRequest extends Request {
     id: number;
     name: string;
     email: string;
+    role: string;
   };
   tokenHash?: string;
 }
@@ -56,6 +57,12 @@ export const authenticate = async (
       return;
     }
 
+    // Block soft-deleted users
+    if (tokenRecord.user.deletedAt) {
+      res.status(401).json({ message: 'Unauthenticated.' });
+      return;
+    }
+
     // Update last_used_at
     await prisma.token.update({
       where: { id: tokenRecord.id },
@@ -67,6 +74,7 @@ export const authenticate = async (
       id: Number(tokenRecord.user.id),
       name: tokenRecord.user.name,
       email: tokenRecord.user.email,
+      role: tokenRecord.user.role,
     };
     req.tokenHash = decoded.tokenHash;
 

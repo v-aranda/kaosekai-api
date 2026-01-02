@@ -14,7 +14,23 @@ async function seed() {
   try {
     console.log('🌱 Iniciando seed do banco de dados...\n');
 
-    // Criar usuário de teste
+    // Criar usuário ADMIN
+    console.log('👤 Criando usuário ADMIN...');
+    const adminPassword = await bcrypt.hash('admin123', 12);
+    
+    const admin = await prisma.user.upsert({
+      where: { email: 'admin@kaosekai.com' },
+      create: {
+        name: 'Admin Kaosekai',
+        email: 'admin@kaosekai.com',
+        password: adminPassword,
+        role: 'ADMIN',
+      },
+      update: { role: 'ADMIN' },
+    });
+    console.log(`✅ Admin criado: ${admin.email} (role: ${admin.role})\n`);
+
+    // Criar usuário de teste (PLAYER)
     console.log('👤 Criando usuário de teste...');
     const hashedPassword = await bcrypt.hash('password123', 12);
     
@@ -24,10 +40,11 @@ async function seed() {
         name: 'Usuário Teste',
         email: 'teste@kaosekai.com',
         password: hashedPassword,
+        role: 'PLAYER',
       },
-      update: {},
+      update: { role: 'PLAYER' },
     });
-    console.log(`✅ Usuário criado: ${user.email}\n`);
+    console.log(`✅ Usuário criado: ${user.email} (role: ${user.role})\n`);
 
     // Criar personagem de exemplo
     console.log('🎭 Criando personagem de exemplo...');
