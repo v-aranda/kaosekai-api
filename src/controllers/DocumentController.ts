@@ -93,10 +93,10 @@ export class DocumentController {
         return res.status(404).json({ message: 'Documento não encontrado' });
       }
 
-      res.json({ ...document, id: document.id.toString() });
+      return res.json({ ...document, id: document.id.toString() });
     } catch (error) {
       console.error('Erro ao buscar documento:', error);
-      res.status(500).json({ message: 'Erro ao buscar documento' });
+      return res.status(500).json({ message: 'Erro ao buscar documento' });
     }
   }
 
@@ -114,10 +114,10 @@ export class DocumentController {
         return res.status(404).json({ message: 'Documento não encontrado' });
       }
 
-      res.json({ ...document, id: document.id.toString() });
+      return res.json({ ...document, id: document.id.toString() });
     } catch (error) {
       console.error('Erro ao buscar documento (admin):', error);
-      res.status(500).json({ message: 'Erro ao buscar documento' });
+      return res.status(500).json({ message: 'Erro ao buscar documento' });
     }
   }
 
@@ -153,13 +153,13 @@ export class DocumentController {
         }
       });
 
-      res.status(201).json({
+      return res.status(201).json({
         ...document,
         id: document.id.toString()
       });
     } catch (error) {
       console.error('Erro ao criar documento:', error);
-      res.status(500).json({ message: 'Erro ao criar documento' });
+      return res.status(500).json({ message: 'Erro ao criar documento' });
     }
   }
 
@@ -211,13 +211,13 @@ export class DocumentController {
         data: updateData
       });
 
-      res.json({
+      return res.json({
         ...document,
         id: document.id.toString()
       });
     } catch (error) {
       console.error('Erro ao atualizar documento:', error);
-      res.status(500).json({ message: 'Erro ao atualizar documento' });
+      return res.status(500).json({ message: 'Erro ao atualizar documento' });
     }
   }
 
@@ -247,10 +247,10 @@ export class DocumentController {
         where: { id: parsedId }
       });
 
-      res.json({ message: 'Documento deletado com sucesso' });
+      return res.json({ message: 'Documento deletado com sucesso' });
     } catch (error) {
       console.error('Erro ao deletar documento:', error);
-      res.status(500).json({ message: 'Erro ao deletar documento' });
+      return res.status(500).json({ message: 'Erro ao deletar documento' });
     }
   }
 }
