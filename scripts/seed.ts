@@ -119,10 +119,46 @@ async function seed() {
     });
     console.log(`✅ Personagem criado: ${character.name}\n`);
 
+    // Criar parties
+    console.log('🎭 Criando parties...');
+    const party1 = await prisma.party.create({
+      data: {
+        ownerId: user.id,
+        name: 'Aventureiros do Bosque',
+        description: 'Uma grupo de aventureiros explorando as florestas misteriosas.',
+        banner: null,
+        type: 'PUBLIC',
+      },
+    });
+    console.log(`✅ Party criada: ${party1.name}\n`);
+
+    const party2 = await prisma.party.create({
+      data: {
+        ownerId: admin.id,
+        name: 'Guardiões da Coroa',
+        description: 'Defensores da realeza contra as trevas.',
+        banner: null,
+        type: 'PRIVATE',
+      },
+    });
+    console.log(`✅ Party criada: ${party2.name}\n`);
+
+    // Adicionar usuário como membro na party do admin
+    await prisma.partyMember.create({
+      data: {
+        partyId: party2.id,
+        userId: user.id,
+      },
+    });
+    console.log(`✅ ${user.name} adicionado como membro de ${party2.name}\n`);
+
     console.log('🎉 Seed concluído com sucesso!');
     console.log('\n📝 Credenciais de teste:');
     console.log('   Email: teste@kaosekai.com');
     console.log('   Senha: password123');
+    console.log('\n🎭 Parties criadas:');
+    console.log(`   - ${party1.name} (Criada por ${user.name})`);
+    console.log(`   - ${party2.name} (Criada por ${admin.name}, ${user.name} é membro)`);
   } catch (error) {
     console.error('❌ Erro no seed:', error);
     process.exit(1);

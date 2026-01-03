@@ -7,6 +7,8 @@ import { authenticate } from '../middleware/auth';
 import { requireRole } from '../middleware/authorize';
 import { UserController } from '../controllers/UserController';
 import { PartyController } from '../controllers/PartyController';
+import { PostController } from '../controllers/PostController';
+import InvitationController from '../controllers/InvitationController';
 
 const router = Router();
 
@@ -45,10 +47,21 @@ router.delete('/characters/:id', authenticate, CharacterController.destroy);
 // Party routes (owner-only)
 router.get('/parties', authenticate, PartyController.index);
 router.post('/parties', authenticate, PartyController.store);
+router.get('/parties/code/:code', authenticate, PartyController.findByCode);
+router.post('/parties/join', authenticate, PartyController.joinParty);
 router.get('/parties/:id', authenticate, PartyController.show);
 router.put('/parties/:id', authenticate, PartyController.update);
 router.patch('/parties/:id', authenticate, PartyController.update);
 router.delete('/parties/:id', authenticate, PartyController.destroy);
+
+// Party Posts routes
+router.get('/parties/:partyId/posts', authenticate, PostController.index);
+router.post('/parties/:partyId/posts', authenticate, PostController.store);
+router.delete('/posts/:id', authenticate, PostController.destroy);
+
+// Invitation routes
+router.get('/users/search', authenticate, InvitationController.searchUsers);
+router.post('/parties/:partyId/invitations', authenticate, InvitationController.inviteUser);
 
 // Document routes
 // Public catalog (no auth required)

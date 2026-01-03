@@ -21,6 +21,26 @@ const partyUpdateSchema = z.object({
   type: z.enum(['PUBLIC', 'PRIVATE']).optional(),
 });
 
+async function generateUniqueCode(): Promise<string> {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code: string;
+  let exists = true;
+
+  while (exists) {
+    code = '';
+    for (let i = 0; i < 6; i++) {
+      code += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    
+    const existing = await db.party.findUnique({
+      where: { code },
+    });
+    exists = !!existing;
+  }
+
+  return code!;
+}
+
 function serializeParty(party: any, membersCount: number) {
   return {
     id: Number(party.id),
@@ -28,6 +48,7 @@ function serializeParty(party: any, membersCount: number) {
     name: party.name,
     description: party.description,
     banner: party.banner ?? null,
+    code: party.code,
     type: party.type,
     members_count: membersCount,
     created_at: party.createdAt.toISOString(),
@@ -43,14 +64,39 @@ export class PartyController {
         return;
       }
 
-      const parties = await db.party.findMany({
+      // Get parties owned by the user
+      const ownedParties = await db.party.findMany({
         where: { ownerId: BigInt(req.user.id) },
         orderBy: { updatedAt: 'desc' },
         include: { _count: { select: { members: true } } },
       });
 
-      const serialized = parties.map((party: any) =>
-        serializeParty(party, party._count?.members ?? 0)
+      // Get parties where the user is a member
+      const memberParties = await db.party.findMany({
+        where: {
+          members: {
+            some: { userId: BigInt(req.user.id) }
+          }
+        },
+        orderBy: { updatedAt: 'desc' },
+        include: { _count: { select: { members: true } } },
+      });
+
+      // Merge and deduplicate parties
+      const allPartiesMap = new Map();
+      
+      ownedParties.forEach((party: any) => {
+        allPartiesMap.set(Number(party.id), { party, membersCount: party._count?.members ?? 0 });
+      });
+
+      memberParties.forEach((party: any) => {
+        if (!allPartiesMap.has(Number(party.id))) {
+          allPartiesMap.set(Number(party.id), { party, membersCount: party._count?.members ?? 0 });
+        }
+      });
+
+      const serialized = Array.from(allPartiesMap.values()).map(({ party, membersCount }) =>
+        serializeParty(party, membersCount)
       );
 
       res.json(serialized);
@@ -78,12 +124,15 @@ export class PartyController {
 
       const { name, description, banner, type } = validation.data;
 
+      const code = await generateUniqueCode();
+
       const party = await db.party.create({
         data: {
           ownerId: BigInt(req.user.id),
           name,
           description,
           banner: banner ?? null,
+          code,
           type: type ?? 'PUBLIC',
         },
       });
@@ -212,6 +261,96 @@ export class PartyController {
       res.json({ message: 'Party deleted.' });
     } catch (error) {
       console.error('Destroy party error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  static async findByCode(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ message: 'Unauthenticated.' });
+        return;
+      }
+
+      const code = req.params.code?.toUpperCase();
+      if (!code || code.length !== 6) {
+        res.status(422).json({ message: 'Invalid code format. Code must be 6 characters.' });
+        return;
+      }
+
+      const party = await db.party.findUnique({
+        where: { code },
+        include: { _count: { select: { members: true } } },
+      });
+
+      if (!party) {
+        res.status(404).json({ message: 'Party not found.' });
+        return;
+      }
+
+      res.json(serializeParty(party, party._count?.members ?? 0));
+    } catch (error) {
+      console.error('Find party by code error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  static async joinParty(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ message: 'Unauthenticated.' });
+        return;
+      }
+
+      const code = req.body.code?.toUpperCase();
+      if (!code || code.length !== 6) {
+        res.status(422).json({ message: 'Invalid code format. Code must be 6 characters.' });
+        return;
+      }
+
+      const party = await db.party.findUnique({
+        where: { code },
+      });
+
+      if (!party) {
+        res.status(404).json({ message: 'Party not found.' });
+        return;
+      }
+
+      // Check if user is already a member or owner
+      if (Number(party.ownerId) === req.user.id) {
+        res.status(400).json({ message: 'You are already the owner of this party.' });
+        return;
+      }
+
+      const existingMembership = await db.partyMember.findFirst({
+        where: {
+          partyId: party.id,
+          userId: BigInt(req.user.id),
+        },
+      });
+
+      if (existingMembership) {
+        res.status(400).json({ message: 'You are already a member of this party.' });
+        return;
+      }
+
+      // Add user as member
+      await db.partyMember.create({
+        data: {
+          partyId: party.id,
+          userId: BigInt(req.user.id),
+        },
+      });
+
+      const updatedParty = await db.party.findUnique({
+        where: { code },
+        include: { _count: { select: { members: true } } },
+      });
+
+      res.status(201).json(serializeParty(updatedParty, updatedParty._count?.members ?? 0));
+    } catch (error) {
+      console.error('Join party error:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }
