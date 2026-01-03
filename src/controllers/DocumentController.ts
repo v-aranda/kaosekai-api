@@ -1,26 +1,32 @@
-import { Request, Response } from 'express';
-import { prisma } from '../prisma';
-import multer from 'multer';
-import path from 'path';
 import fs from 'fs/promises';
+import path from 'path';
+
+import { Request, Response } from 'express';
+import multer from 'multer';
+
+import { prisma } from '../prisma';
 
 // Configuração do multer para upload de arquivos
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
-    const uploadDir = path.join(process.cwd(), 'uploads', file.fieldname === 'coverImage' ? 'covers' : 'pdfs');
+    const uploadDir = path.join(
+      process.cwd(),
+      'uploads',
+      file.fieldname === 'coverImage' ? 'covers' : 'pdfs'
+    );
     await fs.mkdir(uploadDir, { recursive: true });
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
+  },
 });
 
 export const upload = multer({
   storage,
   limits: {
-    fileSize: 200 * 1024 * 1024 // 200MB limit
+    fileSize: 200 * 1024 * 1024, // 200MB limit
   },
   fileFilter: (req, file, cb) => {
     if (file.fieldname === 'coverImage') {
@@ -33,7 +39,7 @@ export const upload = multer({
       }
     }
     cb(null, true);
-  }
+  },
 });
 
 export class DocumentController {
@@ -55,10 +61,10 @@ export class DocumentController {
     try {
       const documents = await prisma.document.findMany({
         where: { isWip: false },
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: 'desc' },
       });
 
-      res.json(documents.map(doc => ({ ...doc, id: doc.id.toString() })));
+      res.json(documents.map((doc) => ({ ...doc, id: doc.id.toString() })));
     } catch (error) {
       console.error('Erro ao listar documentos:', error);
       res.status(500).json({ message: 'Erro ao listar documentos' });
@@ -69,10 +75,10 @@ export class DocumentController {
   static async adminIndex(req: Request, res: Response) {
     try {
       const documents = await prisma.document.findMany({
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: 'desc' },
       });
 
-      res.json(documents.map(doc => ({ ...doc, id: doc.id.toString() })));
+      res.json(documents.map((doc) => ({ ...doc, id: doc.id.toString() })));
     } catch (error) {
       console.error('Erro ao listar documentos (admin):', error);
       res.status(500).json({ message: 'Erro ao listar documentos' });
@@ -86,7 +92,7 @@ export class DocumentController {
       if (parsedId === null) return res.status(404).json({ message: 'Documento não encontrado' });
 
       const document = await prisma.document.findUnique({
-        where: { id: parsedId }
+        where: { id: parsedId },
       });
 
       if (!document || document.isWip) {
@@ -107,7 +113,7 @@ export class DocumentController {
       if (parsedId === null) return res.status(404).json({ message: 'Documento não encontrado' });
 
       const document = await prisma.document.findUnique({
-        where: { id: parsedId }
+        where: { id: parsedId },
       });
 
       if (!document) {
@@ -125,18 +131,18 @@ export class DocumentController {
   static async store(req: Request, res: Response) {
     try {
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-      
+
       if (!files?.coverImage?.[0] || !files?.pdfFile?.[0]) {
-        return res.status(400).json({ 
-          message: 'Capa e arquivo PDF são obrigatórios' 
+        return res.status(400).json({
+          message: 'Capa e arquivo PDF são obrigatórios',
         });
       }
 
       const { name, version, isWip } = req.body;
 
       if (!name || !version) {
-        return res.status(400).json({ 
-          message: 'Nome e versão são obrigatórios' 
+        return res.status(400).json({
+          message: 'Nome e versão são obrigatórios',
         });
       }
 
@@ -149,13 +155,13 @@ export class DocumentController {
           version,
           coverImage,
           pdfFile,
-          isWip: isWip === 'true' || isWip === true
-        }
+          isWip: isWip === 'true' || isWip === true,
+        },
       });
 
       return res.status(201).json({
         ...document,
-        id: document.id.toString()
+        id: document.id.toString(),
       });
     } catch (error) {
       console.error('Erro ao criar documento:', error);
@@ -172,7 +178,7 @@ export class DocumentController {
       const { name, version, isWip } = req.body;
 
       const existingDoc = await prisma.document.findUnique({
-        where: { id: parsedId }
+        where: { id: parsedId },
       });
 
       if (!existingDoc) {
@@ -208,12 +214,12 @@ export class DocumentController {
 
       const document = await prisma.document.update({
         where: { id: parsedId },
-        data: updateData
+        data: updateData,
       });
 
       return res.json({
         ...document,
-        id: document.id.toString()
+        id: document.id.toString(),
       });
     } catch (error) {
       console.error('Erro ao atualizar documento:', error);
@@ -228,7 +234,7 @@ export class DocumentController {
       if (parsedId === null) return res.status(404).json({ message: 'Documento não encontrado' });
 
       const document = await prisma.document.findUnique({
-        where: { id: parsedId }
+        where: { id: parsedId },
       });
 
       if (!document) {
@@ -244,7 +250,7 @@ export class DocumentController {
       }
 
       await prisma.document.delete({
-        where: { id: parsedId }
+        where: { id: parsedId },
       });
 
       return res.json({ message: 'Documento deletado com sucesso' });

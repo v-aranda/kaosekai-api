@@ -1,7 +1,8 @@
+import fs from 'fs/promises';
+import path from 'path';
+
 import { Request, Response } from 'express';
 import multer from 'multer';
-import path from 'path';
-import fs from 'fs/promises';
 
 // Storage para imagens gerais (avatar, notas, etc)
 const storage = multer.diskStorage({
@@ -13,20 +14,20 @@ const storage = multer.diskStorage({
   filename: (_req, file, cb) => {
     const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
     cb(null, `${unique}${path.extname(file.originalname)}`);
-  }
+  },
 });
 
 export const imageUpload = multer({
   storage,
   limits: {
-    fileSize: 15 * 1024 * 1024 // 15MB para imagens
+    fileSize: 15 * 1024 * 1024, // 15MB para imagens
   },
   fileFilter: (_req, file, cb) => {
     if (!file.mimetype.startsWith('image/')) {
       return cb(new Error('Apenas arquivos de imagem são permitidos'));
     }
     cb(null, true);
-  }
+  },
 });
 
 export class UploadController {

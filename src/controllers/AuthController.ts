@@ -1,10 +1,11 @@
-import { Request, Response } from 'express';
 import { Prisma } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import { Request, Response } from 'express';
 import { z } from 'zod';
-import { generateToken, hashToken, generateRandomToken } from '../utils/token';
+
 import { AuthRequest } from '../middleware/auth';
 import { prisma } from '../prisma';
+import { generateToken, hashToken, generateRandomToken } from '../utils/token';
 
 // Validation schemas
 const registerSchema = z.object({
@@ -23,7 +24,7 @@ export class AuthController {
     try {
       // Validate request
       const validation = registerSchema.safeParse(req.body);
-      
+
       if (!validation.success) {
         res.status(422).json({
           message: 'The given data was invalid.',
@@ -83,7 +84,7 @@ export class AuthController {
       // Generate token
       const rawToken = generateRandomToken();
       const tokenHash = hashToken(rawToken);
-      
+
       await prisma.token.create({
         data: {
           userId: user.id,
@@ -114,7 +115,7 @@ export class AuthController {
     try {
       // Validate request
       const validation = loginSchema.safeParse(req.body);
-      
+
       if (!validation.success) {
         res.status(422).json({
           message: 'The given data was invalid.',
@@ -158,7 +159,7 @@ export class AuthController {
       // Generate token
       const rawToken = generateRandomToken();
       const tokenHash = hashToken(rawToken);
-      
+
       await prisma.token.create({
         data: {
           userId: user.id,

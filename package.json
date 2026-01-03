@@ -7,6 +7,10 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"scripts/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"scripts/**/*.ts\"",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
@@ -14,7 +18,12 @@
     "seed": "tsx scripts/seed.ts",
     "migrate:laravel": "tsx scripts/migrate-from-laravel.ts"
   },
-  "keywords": ["rpg", "character-sheet", "api", "express"],
+  "keywords": [
+    "rpg",
+    "character-sheet",
+    "api",
+    "express"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
@@ -34,8 +43,16 @@
     "@types/jsonwebtoken": "^9.0.6",
     "@types/multer": "^1.4.11",
     "@types/node": "^20.14.0",
+    "@typescript-eslint/eslint-plugin": "^8.51.0",
+    "@typescript-eslint/parser": "^8.51.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-security": "^3.0.1",
+    "prettier": "^3.7.4",
     "prisma": "^5.22.0",
     "tsx": "^4.16.2",
-    "typescript": "^5.5.2"
+    "typescript": "^5.5.2",
+    "typescript-eslint": "^8.51.0"
   }
 }

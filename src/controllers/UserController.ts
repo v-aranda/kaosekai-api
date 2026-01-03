@@ -1,7 +1,8 @@
-import { Request, Response } from 'express';
 import { Prisma } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import { Request, Response } from 'express';
 import { z } from 'zod';
+
 import { prisma } from '../prisma';
 
 const roleEnum = z.enum(['ADMIN', 'GM', 'PLAYER']);

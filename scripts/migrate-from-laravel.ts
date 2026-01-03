@@ -1,13 +1,13 @@
 /**
  * Script para migrar dados do Laravel para Node.js API
- * 
+ *
  * Este script migra:
  * - Usuários (preservando IDs)
  * - Personagens (preservando IDs e relacionamentos)
- * 
+ *
  * USO:
  *   tsx scripts/migrate-from-laravel.ts
- * 
+ *
  * REQUISITOS:
  *   - Database Laravel configurado em LARAVEL_DATABASE_URL
  *   - Database Node.js configurado em DATABASE_URL (.env)
@@ -36,7 +36,7 @@ async function migrate() {
     // Migrate Users
     console.log('📋 Migrando usuários...');
     const laravelUsers = await laravelDb.user.findMany();
-    
+
     for (const user of laravelUsers) {
       await nodeDb.user.upsert({
         where: { id: user.id },
@@ -65,7 +65,7 @@ async function migrate() {
     // Migrate Characters
     console.log('📋 Migrando personagens...');
     const laravelCharacters = await laravelDb.character.findMany();
-    
+
     for (const character of laravelCharacters) {
       await nodeDb.character.upsert({
         where: { id: character.id },

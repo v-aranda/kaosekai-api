@@ -2,47 +2,47 @@ export interface CharacterData {
   name: string;
   playerName: string;
   characterImage: string | null;
-  
+
   stats: {
     body: number;
     senses: number;
     mind: number;
     soul: number;
   };
-  
+
   hp: { current: number; max: number };
   determination: { current: number; max: number };
-  
+
   rd: number;
   block: number;
-  
+
   skills: Array<{ name: string; value: number }>;
   conditions: string[];
-  
+
   attacks: Array<{
     name: string;
     damage: string;
     graze: string;
     critical: string;
   }>;
-  
+
   abilities: Array<{
     name: string;
     type: 'Ação' | 'Reação' | 'Passivo' | 'Técnica';
     cost: string;
     description: string;
   }>;
-  
+
   feats: Array<{
     name: string;
     type: 'Ação' | 'Reação' | 'Passivo' | 'Técnica';
     cost: string;
     description: string;
   }>;
-  
+
   notes: string;
   origin: string;
-  
+
   investigationNotes: Array<{
     id: string;
     x: number;
@@ -53,7 +53,7 @@ export interface CharacterData {
     width: number;
     height: number;
   }>;
-  
+
   inventory: Array<{
     id: string;
     name: string;
@@ -64,7 +64,7 @@ export interface CharacterData {
     type: 'CONSUMIVEL' | 'EQUIPAMENTO' | 'OUTRO';
     equipped?: boolean;
   }>;
-  
+
   credits: number;
 }
 

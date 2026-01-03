@@ -1,6 +1,7 @@
-import { Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { Response } from 'express';
 import { z } from 'zod';
+
 import { AuthRequest } from '../middleware/auth';
 
 const prisma = new PrismaClient();
@@ -54,7 +55,7 @@ export class CharacterController {
 
       // Validate request
       const validation = characterSchema.safeParse(req.body);
-      
+
       if (!validation.success) {
         res.status(422).json({
           message: 'The given data was invalid.',
@@ -146,7 +147,7 @@ export class CharacterController {
 
       // Validate request
       const validation = characterSchema.safeParse(req.body);
-      
+
       if (!validation.success) {
         res.status(422).json({
           message: 'The given data was invalid.',

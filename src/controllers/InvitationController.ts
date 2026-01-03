@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+
 import { prisma } from '../prisma';
 
 export default class InvitationController {
@@ -8,7 +9,7 @@ export default class InvitationController {
   static async searchUsers(req: Request, res: Response) {
     try {
       const { query = '' } = req.query;
-      
+
       if (!query || String(query).trim().length === 0) {
         res.json([]);
         return;
@@ -35,7 +36,7 @@ export default class InvitationController {
         take: 20,
       });
 
-      const serialized = users.map(user => ({
+      const serialized = users.map((user) => ({
         id: Number(user.id),
         name: user.name,
         email: user.email,

@@ -1,10 +1,12 @@
-import express from 'express';
+import path from 'path';
+
+import bcrypt from 'bcrypt';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import path from 'path';
-import bcrypt from 'bcrypt';
-import apiRoutes from './routes/api';
+import express from 'express';
+
 import { prisma } from './prisma';
+import apiRoutes from './routes/api';
 
 // Load environment variables
 dotenv.config();
@@ -64,24 +66,28 @@ async function ensureDefaultAdmin(): Promise<void> {
 
 // CORS configuration
 const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',').map(o => o.trim()).filter(Boolean)
+  ? process.env.CORS_ORIGIN.split(',')
+      .map((o) => o.trim())
+      .filter(Boolean)
   : [];
 
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests without origin (mobile apps, curl) or if origin is permitted
-    const allowAll = allowedOrigins.length === 0 || allowedOrigins.includes('*');
-    if (!origin || allowAll || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.log('CORS blocked for:', origin);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Silent-Request']
-}));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests without origin (mobile apps, curl) or if origin is permitted
+      const allowAll = allowedOrigins.length === 0 || allowedOrigins.includes('*');
+      if (!origin || allowAll || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.log('CORS blocked for:', origin);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Silent-Request'],
+  })
+);
 
 // Middleware
 app.use(express.json());
@@ -124,20 +130,13 @@ app.use((req, res) => {
 });
 
 // Error handler
-app.use(
-  (
-    err: Error,
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    console.error('Error:', err);
-    res.status(500).json({
-      message: 'Internal server error',
-      error: process.env.NODE_ENV === 'development' ? err.message : undefined,
-    });
-  }
-);
+app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('Error:', err);
+  res.status(500).json({
+    message: 'Internal server error',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined,
+  });
+});
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);

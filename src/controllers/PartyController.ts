@@ -1,7 +1,8 @@
 import { Response } from 'express';
 import { z } from 'zod';
-import { prisma } from '../prisma';
+
 import { AuthRequest } from '../middleware/auth';
+import { prisma } from '../prisma';
 
 // NOTE: After changing Prisma schema, run `npx prisma generate`.
 // Casting to any here avoids type errors until the client is regenerated.
@@ -31,7 +32,7 @@ async function generateUniqueCode(): Promise<string> {
     for (let i = 0; i < 6; i++) {
       code += characters.charAt(Math.floor(Math.random() * characters.length));
     }
-    
+
     const existing = await db.party.findUnique({
       where: { code },
     });
@@ -75,8 +76,8 @@ export class PartyController {
       const memberParties = await db.party.findMany({
         where: {
           members: {
-            some: { userId: BigInt(req.user.id) }
-          }
+            some: { userId: BigInt(req.user.id) },
+          },
         },
         orderBy: { updatedAt: 'desc' },
         include: { _count: { select: { members: true } } },
@@ -84,7 +85,7 @@ export class PartyController {
 
       // Merge and deduplicate parties
       const allPartiesMap = new Map();
-      
+
       ownedParties.forEach((party: any) => {
         allPartiesMap.set(Number(party.id), { party, membersCount: party._count?.members ?? 0 });
       });

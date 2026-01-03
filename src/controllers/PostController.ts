@@ -1,7 +1,8 @@
 import { Response } from 'express';
 import { z } from 'zod';
-import { prisma } from '../prisma';
+
 import { AuthRequest } from '../middleware/auth';
+import { prisma } from '../prisma';
 
 // NOTE: After changing Prisma schema, run `npx prisma generate`.
 // Casting to any here avoids type errors until the client is regenerated.
@@ -54,14 +55,14 @@ export class PostController {
       }
 
       const isOwner = party.ownerId === BigInt(req.user.id);
-      const isMember = !!await db.partyMember.findUnique({
+      const isMember = !!(await db.partyMember.findUnique({
         where: {
           partyId_userId: {
             partyId: BigInt(partyId),
             userId: BigInt(req.user.id),
           },
         },
-      });
+      }));
 
       if (!isOwner && !isMember) {
         res.status(403).json({ message: 'You do not have access to this party.' });
@@ -83,9 +84,9 @@ export class PostController {
     } catch (error) {
       console.error('Index posts error:', error instanceof Error ? error.message : String(error));
       console.error('Stack:', error instanceof Error ? error.stack : '');
-      res.status(500).json({ 
+      res.status(500).json({
         message: 'Internal server error',
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
     }
   }
@@ -114,14 +115,14 @@ export class PostController {
       }
 
       const isOwner = party.ownerId === BigInt(req.user.id);
-      const isMember = !!await db.partyMember.findUnique({
+      const isMember = !!(await db.partyMember.findUnique({
         where: {
           partyId_userId: {
             partyId: BigInt(partyId),
             userId: BigInt(req.user.id),
           },
         },
-      });
+      }));
 
       if (!isOwner && !isMember) {
         res.status(403).json({ message: 'You do not have access to this party.' });
@@ -157,9 +158,9 @@ export class PostController {
     } catch (error) {
       console.error('Store post error:', error instanceof Error ? error.message : String(error));
       console.error('Stack:', error instanceof Error ? error.stack : '');
-      res.status(500).json({ 
+      res.status(500).json({
         message: 'Internal server error',
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
     }
   }
@@ -198,9 +199,9 @@ export class PostController {
     } catch (error) {
       console.error('Destroy post error:', error instanceof Error ? error.message : String(error));
       console.error('Stack:', error instanceof Error ? error.stack : '');
-      res.status(500).json({ 
+      res.status(500).json({
         message: 'Internal server error',
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
     }
   }
