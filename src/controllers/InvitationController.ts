@@ -51,7 +51,7 @@ export default class InvitationController {
   /**
    * Convidar usuário para party
    */
-  static async inviteUser(req: Request, res: Response) {
+  static async inviteUser(req: Request, res: Response): Promise<void> {
     try {
       const { partyId } = req.params;
       const { userId } = req.body;
@@ -109,7 +109,7 @@ export default class InvitationController {
         },
       });
 
-      res.status(201).json({
+      return res.status(201).json({
         message: 'User invited successfully',
         member: {
           id: Number(newMember.id),
@@ -121,7 +121,7 @@ export default class InvitationController {
     } catch (error) {
       console.error('Invite user error:', error instanceof Error ? error.message : String(error));
       console.error('Stack:', error instanceof Error ? error.stack : '');
-      res.status(500).json({
+      return res.status(500).json({
         message: 'Internal server error',
         error: error instanceof Error ? error.message : String(error),
       });
