@@ -28,4 +28,4 @@ EXPOSE 8000
 
 # Se o seu arquivo principal em src for server.ts, o build gera server.js
 # Se for index.ts, o build gera index.js. Ajuste abaixo conforme necessário:
-CMD npx prisma migrate deploy --skip-generate && node dist/server.js
+CMD npx prisma migrate deploy && node dist/server.js
