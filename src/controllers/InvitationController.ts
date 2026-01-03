@@ -51,7 +51,7 @@ export default class InvitationController {
   /**
    * Convidar usuário para party
    */
-  static async inviteUser(req: Request, res: Response): Promise<void> {
+  static async inviteUser(req: Request, res: Response) {
     try {
       const { partyId } = req.params;
       const { userId } = req.body;
@@ -59,11 +59,13 @@ export default class InvitationController {
 
       // Validar inputs
       if (!partyId || !userId) {
-        return res.status(400).json({ message: 'Party ID and User ID are required' });
+        res.status(400).json({ message: 'Party ID and User ID are required' });
+        return;
       }
 
       if (!authenticatedUser) {
-        return res.status(401).json({ message: 'Unauthenticated' });
+        res.status(401).json({ message: 'Unauthenticated' });
+        return;
       }
 
       // Verificar se party existe
@@ -72,12 +74,14 @@ export default class InvitationController {
       });
 
       if (!party) {
-        return res.status(404).json({ message: 'Party not found' });
+        res.status(404).json({ message: 'Party not found' });
+        return;
       }
 
       // Verificar se é o owner da party
       if (party.ownerId !== BigInt(authenticatedUser.id)) {
-        return res.status(403).json({ message: 'Only party owner can invite users' });
+        res.status(403).json({ message: 'Only party owner can invite users' });
+        return;
       }
 
       // Verificar se usuário existe
@@ -86,7 +90,8 @@ export default class InvitationController {
       });
 
       if (!user || user.deletedAt) {
-        return res.status(404).json({ message: 'User not found' });
+        res.status(404).json({ message: 'User not found' });
+        return;
       }
 
       // Verificar se já é membro da party
@@ -98,7 +103,8 @@ export default class InvitationController {
       });
 
       if (existingMember) {
-        return res.status(400).json({ message: 'User is already a member of this party' });
+        res.status(400).json({ message: 'User is already a member of this party' });
+        return;
       }
 
       // Adicionar como membro
@@ -109,7 +115,7 @@ export default class InvitationController {
         },
       });
 
-      return res.status(201).json({
+      res.status(201).json({
         message: 'User invited successfully',
         member: {
           id: Number(newMember.id),
@@ -121,7 +127,7 @@ export default class InvitationController {
     } catch (error) {
       console.error('Invite user error:', error instanceof Error ? error.message : String(error));
       console.error('Stack:', error instanceof Error ? error.stack : '');
-      return res.status(500).json({
+      res.status(500).json({
         message: 'Internal server error',
         error: error instanceof Error ? error.message : String(error),
       });
