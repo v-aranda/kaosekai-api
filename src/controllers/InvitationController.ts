@@ -9,6 +9,11 @@ export default class InvitationController {
     try {
       const { query = '' } = req.query;
       
+      if (!query || String(query).trim().length === 0) {
+        res.json([]);
+        return;
+      }
+
       const users = await prisma.user.findMany({
         where: {
           AND: [
@@ -41,6 +46,7 @@ export default class InvitationController {
     } catch (error) {
       console.error('Search users error:', error instanceof Error ? error.message : String(error));
       console.error('Stack:', error instanceof Error ? error.stack : '');
+      console.error('Full error:', error);
       res.status(500).json({
         message: 'Internal server error',
         error: error instanceof Error ? error.message : String(error),
