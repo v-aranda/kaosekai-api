@@ -10,6 +10,7 @@ export interface AuthRequest extends Request {
     name: string;
     email: string;
     role: string;
+    avatar?: string | null;
   };
   tokenHash?: string;
 }
@@ -75,6 +76,7 @@ export const authenticate = async (
       name: tokenRecord.user.name,
       email: tokenRecord.user.email,
       role: tokenRecord.user.role,
+      avatar: tokenRecord.user.avatar || null,
     };
     req.tokenHash = decoded.tokenHash;
 

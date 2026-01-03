@@ -2,7 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import bcrypt from 'bcrypt';
 import apiRoutes from './routes/api';
+import { prisma } from './prisma';
 
 // Load environment variables
 dotenv.config();
@@ -21,6 +23,45 @@ if (missingEnvs.length) {
 const app = express();
 const PORT = process.env.PORT || 8000;
 
+// Bootstrap a default admin so environments start usable without manual seeding
+async function ensureDefaultAdmin(): Promise<void> {
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  const adminName = process.env.ADMIN_NAME || 'Admin';
+
+  if (!adminEmail || !adminPassword) {
+    console.warn('Admin bootstrap skipped: ADMIN_EMAIL or ADMIN_PASSWORD not set.');
+    return;
+  }
+
+  const existing = await prisma.user.findUnique({ where: { email: adminEmail } });
+
+  const hashedPassword = await bcrypt.hash(adminPassword, 12);
+
+  if (!existing) {
+    await prisma.user.create({
+      data: {
+        name: adminName,
+        email: adminEmail,
+        password: hashedPassword,
+        role: 'ADMIN',
+      },
+    });
+    console.log(`Default admin created: ${adminEmail}`);
+    return;
+  }
+
+  await prisma.user.update({
+    where: { id: existing.id },
+    data: {
+      name: adminName,
+      role: 'ADMIN',
+      password: hashedPassword,
+    },
+  });
+  console.log(`Default admin ensured and password refreshed: ${adminEmail}`);
+}
+
 // CORS configuration
 const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map(o => o.trim()).filter(Boolean)
@@ -38,7 +79,7 @@ app.use(cors({
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
 }));
 
@@ -102,4 +143,5 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📚 API documentation: http://localhost:${PORT}`);
   console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
+  ensureDefaultAdmin().catch((err) => console.error('Admin bootstrap error:', err));
 });

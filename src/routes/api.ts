@@ -6,6 +6,7 @@ import { UploadController, imageUpload } from '../controllers/UploadController';
 import { authenticate } from '../middleware/auth';
 import { requireRole } from '../middleware/authorize';
 import { UserController } from '../controllers/UserController';
+import { PartyController } from '../controllers/PartyController';
 
 const router = Router();
 
@@ -23,6 +24,7 @@ router.post('/uploads/images', authenticate, imageUpload.single('image'), Upload
 
 // Protected routes
 router.get('/user', authenticate, AuthController.getUser);
+router.patch('/user/profile', authenticate, UserController.updateMe);
 router.post('/logout', authenticate, AuthController.logout);
 
 // Admin user management
@@ -39,6 +41,14 @@ router.get('/characters/:id', authenticate, CharacterController.show);
 router.put('/characters/:id', authenticate, CharacterController.update);
 router.patch('/characters/:id', authenticate, CharacterController.update);
 router.delete('/characters/:id', authenticate, CharacterController.destroy);
+
+// Party routes (owner-only)
+router.get('/parties', authenticate, PartyController.index);
+router.post('/parties', authenticate, PartyController.store);
+router.get('/parties/:id', authenticate, PartyController.show);
+router.put('/parties/:id', authenticate, PartyController.update);
+router.patch('/parties/:id', authenticate, PartyController.update);
+router.delete('/parties/:id', authenticate, PartyController.destroy);
 
 // Document routes
 // Public catalog (no auth required)

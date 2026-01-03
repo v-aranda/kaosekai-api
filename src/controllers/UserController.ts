@@ -11,6 +11,7 @@ const createUserSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
   role: roleEnum.optional().default('PLAYER'),
+  avatar: z.string().url().max(2048).optional(),
 });
 
 const updateUserSchema = z.object({
@@ -18,6 +19,7 @@ const updateUserSchema = z.object({
   email: z.string().email().optional(),
   password: z.string().min(6).optional(),
   role: roleEnum.optional(),
+  avatar: z.string().url().max(2048).optional(),
 });
 
 const serializeUser = (user: any) => ({
@@ -25,6 +27,7 @@ const serializeUser = (user: any) => ({
   name: user.name,
   email: user.email,
   role: user.role,
+  avatar: user.avatar ?? null,
   created_at: user.createdAt,
   updated_at: user.updatedAt,
 });
@@ -141,6 +144,60 @@ export class UserController {
       }
 
       console.error('Delete user error:', err);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  static async updateMe(req: Request, res: Response): Promise<void> {
+    const validation = updateUserSchema.safeParse(req.body);
+
+    if (!validation.success) {
+      res.status(422).json({
+        message: 'The given data was invalid.',
+        errors: validation.error.flatten().fieldErrors,
+      });
+      return;
+    }
+
+    const authUserId = (req as any).user?.id;
+    if (!authUserId) {
+      res.status(401).json({ message: 'Unauthenticated.' });
+      return;
+    }
+
+    try {
+      const data: any = { ...validation.data };
+      if (data.role) delete data.role; // role não pode ser alterado aqui
+
+      if (data.password) {
+        data.password = await bcrypt.hash(data.password, 12);
+      }
+
+      const user = await prisma.user.update({
+        where: { id: BigInt(authUserId) },
+        data,
+      });
+
+      res.json(serializeUser(user));
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        if (err.code === 'P2002') {
+          res.status(422).json({
+            message: 'The given data was invalid.',
+            errors: {
+              email: ['The email has already been taken.'],
+            },
+          });
+          return;
+        }
+
+        if (err.code === 'P2025') {
+          res.status(404).json({ message: 'User not found.' });
+          return;
+        }
+      }
+
+      console.error('Update profile error:', err);
       res.status(500).json({ message: 'Internal server error' });
     }
   }

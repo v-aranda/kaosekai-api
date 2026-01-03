@@ -96,6 +96,7 @@ export class AuthController {
           name: user.name,
           email: user.email,
           role: user.role,
+          avatar: user.avatar ?? null,
         },
         access_token: jwtToken,
         token_type: 'Bearer',
@@ -163,6 +164,7 @@ export class AuthController {
           name: user.name,
           email: user.email,
           role: user.role,
+          avatar: user.avatar ?? null,
         },
         access_token: jwtToken,
         token_type: 'Bearer',
@@ -200,7 +202,6 @@ export class AuthController {
         res.status(401).json({ message: 'Unauthenticated.' });
         return;
       }
-
       res.json(req.user);
     } catch (error) {
       console.error('Get user error:', error);

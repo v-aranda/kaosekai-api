@@ -79,3 +79,24 @@ export interface AuthResponse {
   access_token: string;
   token_type: string;
 }
+
+export type PartyType = 'PUBLIC' | 'PRIVATE';
+
+export interface Party {
+  id: number;
+  owner_id: number;
+  name: string;
+  description: string;
+  banner: string | null;
+  type: PartyType;
+  members_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PartyMember {
+  id: number;
+  party_id: number;
+  user_id: number;
+  created_at: string;
+}
