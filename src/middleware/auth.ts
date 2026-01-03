@@ -76,7 +76,7 @@ export const authenticate = async (
       name: tokenRecord.user.name,
       email: tokenRecord.user.email,
       role: tokenRecord.user.role,
-      avatar: tokenRecord.user.avatar || null,
+      avatar: tokenRecord.user.avatar ? tokenRecord.user.avatar : undefined,
     };
     req.tokenHash = decoded.tokenHash;
 

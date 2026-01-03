@@ -37,6 +37,10 @@ export class AuthController {
       // Check if email already exists
       const existingUser = await prisma.user.findUnique({
         where: { email },
+        select: {
+          id: true,
+          email: true,
+        },
       });
 
       if (existingUser) {
@@ -96,7 +100,6 @@ export class AuthController {
           name: user.name,
           email: user.email,
           role: user.role,
-          avatar: user.avatar ?? null,
         },
         access_token: jwtToken,
         token_type: 'Bearer',
@@ -125,6 +128,14 @@ export class AuthController {
       // Find user
       const user = await prisma.user.findUnique({
         where: { email },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          password: true,
+          role: true,
+          deletedAt: true,
+        },
       });
 
       if (!user || user.deletedAt) {
@@ -164,7 +175,6 @@ export class AuthController {
           name: user.name,
           email: user.email,
           role: user.role,
-          avatar: user.avatar ?? null,
         },
         access_token: jwtToken,
         token_type: 'Bearer',
